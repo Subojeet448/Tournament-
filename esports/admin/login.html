@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BattleZone – Admin Login</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="auth-wrap">
+  <div style="font-size:2rem;margin-bottom:8px">🛡️</div>
+  <div class="auth-logo">Admin Panel</div>
+  <p class="auth-sub">BattleZone Management Console</p>
+
+  <div class="auth-card">
+    <div class="form-group">
+      <label class="form-label">Admin Username</label>
+      <input class="form-input" type="text" id="user" placeholder="Enter username" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="pass" placeholder="Enter password" autocomplete="current-password">
+    </div>
+    <div id="err" style="font-size:0.82rem;color:var(--red);margin-bottom:12px;min-height:18px"></div>
+    <button class="btn btn-primary" onclick="doLogin()">🔐 Admin Login</button>
+  </div>
+
+  <a href="../index.html" style="margin-top:16px;font-size:0.78rem;color:var(--muted);text-decoration:none">← Back to User App</a>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+  if (DB.get('currentAdmin')) window.location.href = 'index.html';
+
+  function doLogin() {
+    const u = document.getElementById('user').value.trim();
+    const p = document.getElementById('pass').value;
+    const err = document.getElementById('err');
+    if (!u || !p) { err.textContent = 'Please fill all fields'; return; }
+    const admins = DB.get('admins') || [];
+    const admin = admins.find(a => a.username === u && a.password === p);
+    if (!admin) { err.textContent = '❌ Invalid credentials'; return; }
+    DB.set('currentAdmin', admin);
+    window.location.href = 'index.html';
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+</script>
+</body>
+</html>
