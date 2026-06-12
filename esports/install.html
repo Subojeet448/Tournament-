@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BattleZone – Install</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-logo">⚡ BattleZone</div>
+  <p class="auth-sub">Esports Tournament Platform</p>
+  <div class="auth-card">
+    <h2 style="margin-bottom:6px">Setup Wizard</h2>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:20px">This will initialize the database and create default admin credentials.</p>
+    <div id="steps">
+      <div class="card" style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span id="s1" style="font-size:1.3rem">⏳</span>
+          <div><div style="font-size:0.88rem;font-weight:600">Initialize Storage</div>
+          <div style="font-size:0.75rem;color:var(--muted)">Creating localStorage tables</div></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span id="s2" style="font-size:1.3rem">⏳</span>
+          <div><div style="font-size:0.88rem;font-weight:600">Create Admin Account</div>
+          <div style="font-size:0.75rem;color:var(--muted)">admin / admin123</div></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span id="s3" style="font-size:1.3rem">⏳</span>
+          <div><div style="font-size:0.88rem;font-weight:600">Seed Demo Tournaments</div>
+          <div style="font-size:0.75rem;color:var(--muted)">Adding sample data</div></div>
+        </div>
+      </div>
+    </div>
+    <div id="msg" style="margin:16px 0;text-align:center;font-size:0.85rem;min-height:20px"></div>
+    <button class="btn btn-primary" id="installBtn" onclick="runInstall()">🚀 Install Now</button>
+    <div id="doneSection" style="display:none;margin-top:12px">
+      <a href="admin/login.html" class="btn btn-success" style="margin-bottom:8px">Go to Admin Panel →</a>
+      <a href="login.html" class="btn btn-outline">Go to User App →</a>
+    </div>
+  </div>
+  <p style="margin-top:16px;font-size:0.75rem;color:var(--muted)">Default Admin: <strong style="color:var(--accent2)">admin / admin123</strong></p>
+</div>
+<script src="js/app.js"></script>
+<script>
+function step(id, done) {
+  document.getElementById(id).textContent = done ? '✅' : '⏳';
+}
+async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+async function runInstall() {
+  const btn = document.getElementById('installBtn');
+  btn.disabled = true; btn.textContent = 'Installing...';
+  const msg = document.getElementById('msg');
+
+  await sleep(600);
+  // Step 1
+  localStorage.clear();
+  DB.set('users', []);
+  DB.set('tournaments', []);
+  DB.set('participants', []);
+  DB.set('transactions', []);
+  step('s1', true); msg.textContent = 'Storage initialized...';
+
+  await sleep(600);
+  // Step 2 – Admin
+  DB.set('admins', [{ id: 1, username: 'admin', password: 'admin123' }]);
+  step('s2', true); msg.textContent = 'Admin created...';
+
+  await sleep(600);
+  // Step 3 – Demo tournaments
+  const now = Date.now();
+  const demos = [
+    { id: now+1, title: 'BGMI Pro League S1', game_name: 'BGMI', entry_fee: 50, prize_pool: 5000, match_time: new Date(Date.now()+86400000*2).toISOString(), commission_pct: 20, status: 'upcoming', room_id: '', room_password: '', winner_id: null, created_at: new Date().toISOString() },
+    { id: now+2, title: 'Free Fire Grand Cup', game_name: 'Free Fire', entry_fee: 30, prize_pool: 3000, match_time: new Date(Date.now()+86400000).toISOString(), commission_pct: 20, status: 'live', room_id: 'FF2024', room_password: 'ff@123', winner_id: null, created_at: new Date().toISOString() },
+    { id: now+3, title: 'Valorant Open', game_name: 'Valorant', entry_fee: 100, prize_pool: 10000, match_time: new Date(Date.now()+86400000*5).toISOString(), commission_pct: 15, status: 'upcoming', room_id: '', room_password: '', winner_id: null, created_at: new Date().toISOString() },
+    { id: now+4, title: 'COD Mobile Blitz', game_name: 'COD Mobile', entry_fee: 25, prize_pool: 2000, match_time: new Date(Date.now()-86400000).toISOString(), commission_pct: 20, status: 'completed', room_id: 'COD99', room_password: 'cod@99', winner_id: null, created_at: new Date().toISOString() },
+  ];
+  DB.set('tournaments', demos);
+  DB.set('installed', true);
+  step('s3', true);
+  msg.style.color = 'var(--accent3)';
+  msg.textContent = '✅ Installation complete!';
+  btn.style.display = 'none';
+  document.getElementById('doneSection').style.display = 'block';
+}
+</script>
+</body>
+</html>
