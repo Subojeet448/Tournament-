@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BattleZone – Users</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <span class="admin-sidebar-brand">⚡ BattleZone</span>
+    <a href="index.html" class="admin-nav-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <a href="tournament.html" class="admin-nav-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>Tournaments</a>
+    <a href="users.html" class="admin-nav-link active"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Users</a>
+    <a href="settings.html" class="admin-nav-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</a>
+    <div style="position:absolute;bottom:20px;left:0;right:0;padding:0 20px">
+      <button onclick="Auth.adminLogout()" style="width:100%;padding:8px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;color:var(--red);cursor:pointer;font-size:0.82rem">Logout</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+      <h2>👥 Users</h2>
+      <input type="text" id="searchBox" class="form-input" style="width:220px;padding:8px 12px;font-size:0.82rem" placeholder="🔍 Search username/email">
+    </div>
+
+    <div class="card" style="overflow-x:auto;padding:0">
+      <table class="tbl">
+        <thead><tr><th>#</th><th>Username</th><th>Email</th><th>Balance</th><th>Played</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody id="userTable"></tbody>
+      </table>
+    </div>
+
+    <!-- User Detail Modal -->
+    <div id="historyPanel" style="display:none;margin-top:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 id="historyTitle">Match History</h3>
+        <button onclick="document.getElementById('historyPanel').style.display='none'" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem">✕</button>
+      </div>
+      <div class="card" style="padding:0;overflow-x:auto">
+        <table class="tbl"><thead><tr><th>Tournament</th><th>Game</th><th>Result</th><th>Prize</th></tr></thead>
+        <tbody id="historyBody"></tbody></table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<nav class="admin-mobile-nav">
+  <a href="index.html"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Home</a>
+  <a href="tournament.html"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>Events</a>
+  <a href="users.html" class="active"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Users</a>
+  <a href="settings.html"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</a>
+</nav>
+
+<script src="../js/app.js"></script>
+<script>
+if (!Auth.requireAdmin()) {}
+let searchVal = '';
+document.getElementById('searchBox').addEventListener('input', e => { searchVal = e.target.value.toLowerCase(); renderTable(); });
+
+function renderTable() {
+  let users = Users.all().filter(u => !searchVal || u.username.toLowerCase().includes(searchVal) || u.email.toLowerCase().includes(searchVal));
+  users = [...users].sort((a,b) => b.id - a.id);
+  const tbody = document.getElementById('userTable');
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No users found</td></tr>'; return; }
+  tbody.innerHTML = users.map((u, i) => {
+    const played = Participants.forUser(u.id).length;
+    return `
+    <tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td>
+        <div style="font-weight:600">${u.username}</div>
+        ${u.blocked ? '<span style="font-size:0.68rem;color:var(--red)">BLOCKED</span>' : ''}
+      </td>
+      <td style="color:var(--muted);font-size:0.82rem">${u.email}</td>
+      <td style="color:var(--accent3);font-weight:600">${fmt.inr(u.wallet_balance)}</td>
+      <td>${played}</td>
+      <td style="color:var(--muted);font-size:0.78rem">${fmt.date(u.created_at)}</td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="viewHistory(${u.id})">History</button>
+        <button class="btn btn-sm" onclick="toggleBlock(${u.id})" style="${u.blocked ? 'background:rgba(6,214,160,0.1);border:1px solid var(--accent3);color:var(--accent3)' : 'background:rgba(239,68,68,0.1);border:1px solid var(--red);color:var(--red)'};width:auto;padding:6px 10px">
+          ${u.blocked ? 'Unblock' : 'Block'}
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleBlock(uid) {
+  const u = Users.findById(uid);
+  if (!u) return;
+  Users.update(uid, { blocked: !u.blocked });
+  showToast(u.blocked ? '✅ User unblocked' : '🚫 User blocked');
+  renderTable();
+}
+
+function viewHistory(uid) {
+  const u = Users.findById(uid);
+  document.getElementById('historyTitle').textContent = `📜 ${u.username}'s Match History`;
+  const parts = Participants.forUser(uid);
+  const tbody = document.getElementById('historyBody');
+  if (!parts.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px">No matches played</td></tr>';
+  } else {
+    tbody.innerHTML = parts.map(p => {
+      const t = Tournaments.find(p.tournament_id);
+      if (!t) return '';
+      const isWin = t.winner_id === uid;
+      return `<tr>
+        <td style="font-weight:600">${t.title}</td>
+        <td style="color:var(--muted)">${t.game_name}</td>
+        <td style="color:${isWin ? 'var(--accent3)' : 'var(--muted)'}">${isWin ? '🏆 Winner' : '🎮 Participated'}</td>
+        <td style="color:var(--accent3)">${isWin ? fmt.inr(t.prize_pool) : '—'}</td>
+      </tr>`;
+    }).join('');
+  }
+  document.getElementById('historyPanel').style.display = 'block';
+  document.getElementById('historyPanel').scrollIntoView({ behavior: 'smooth' });
+}
+
+renderTable();
+</script>
+</body>
+</html>
