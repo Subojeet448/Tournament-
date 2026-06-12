@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BattleZone – Settings</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <span class="admin-sidebar-brand">⚡ BattleZone</span>
+    <a href="index.html" class="admin-nav-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <a href="tournament.html" class="admin-nav-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>Tournaments</a>
+    <a href="users.html" class="admin-nav-link"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Users</a>
+    <a href="settings.html" class="admin-nav-link active"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</a>
+    <div style="position:absolute;bottom:20px;left:0;right:0;padding:0 20px">
+      <button onclick="Auth.adminLogout()" style="width:100%;padding:8px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;color:var(--red);cursor:pointer;font-size:0.82rem">Logout</button>
+    </div>
+  </aside>
+
+  <main class="admin-main" style="max-width:600px">
+    <h2 style="margin-bottom:24px">⚙️ Settings</h2>
+
+    <!-- Admin Profile -->
+    <div class="section-title">Admin Profile</div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-input" type="text" id="adminUser" placeholder="Admin username">
+      </div>
+      <button class="btn btn-primary" onclick="saveAdmin()">Save Username</button>
+    </div>
+
+    <!-- Change Password -->
+    <div class="section-title">Change Admin Password</div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="form-group">
+        <label class="form-label">Current Password</label>
+        <input class="form-input" type="password" id="curPass" placeholder="Current password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">New Password</label>
+        <input class="form-input" type="password" id="newPass" placeholder="New password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm New Password</label>
+        <input class="form-input" type="password" id="confirmPass" placeholder="Confirm new password">
+      </div>
+      <button class="btn btn-outline" onclick="changePass()">Update Password</button>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="section-title" style="color:var(--red)">⚠️ Danger Zone</div>
+    <div class="card" style="border-color:rgba(239,68,68,0.3)">
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px">Reset all data. This will delete all users, tournaments, and transactions.</p>
+      <button class="btn btn-danger" onclick="resetAll()">🗑️ Factory Reset</button>
+    </div>
+  </main>
+</div>
+
+<nav class="admin-mobile-nav">
+  <a href="index.html"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Home</a>
+  <a href="tournament.html"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>Events</a>
+  <a href="users.html"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Users</a>
+  <a href="settings.html" class="active"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</a>
+</nav>
+
+<script src="../js/app.js"></script>
+<script>
+if (!Auth.requireAdmin()) {}
+
+function init() {
+  const admin = Auth.currentAdmin();
+  document.getElementById('adminUser').value = admin.username;
+}
+
+function saveAdmin() {
+  const newUser = document.getElementById('adminUser').value.trim();
+  if (!newUser) { showToast('Username cannot be empty', 'error'); return; }
+  const admins = DB.get('admins') || [];
+  const admin = Auth.currentAdmin();
+  const i = admins.findIndex(a => a.id === admin.id);
+  if (i !== -1) { admins[i].username = newUser; DB.set('admins', admins); DB.set('currentAdmin', admins[i]); }
+  showToast('✅ Username updated!');
+}
+
+function changePass() {
+  const cur = document.getElementById('curPass').value;
+  const np = document.getElementById('newPass').value;
+  const cp = document.getElementById('confirmPass').value;
+  const admin = Auth.currentAdmin();
+  if (!cur || !np || !cp) { showToast('Fill all fields', 'error'); return; }
+  if (admin.password !== cur) { showToast('Current password wrong!', 'error'); return; }
+  if (np.length < 6) { showToast('Password must be 6+ chars', 'error'); return; }
+  if (np !== cp) { showToast('Passwords do not match!', 'error'); return; }
+  const admins = DB.get('admins') || [];
+  const i = admins.findIndex(a => a.id === admin.id);
+  if (i !== -1) { admins[i].password = np; DB.set('admins', admins); DB.set('currentAdmin', admins[i]); }
+  document.getElementById('curPass').value = '';
+  document.getElementById('newPass').value = '';
+  document.getElementById('confirmPass').value = '';
+  showToast('✅ Password changed!');
+}
+
+function resetAll() {
+  if (!confirm('⚠️ This will delete ALL data. Are you sure?')) return;
+  if (!confirm('Last warning: All users, tournaments, transactions will be deleted!')) return;
+  const admin = Auth.currentAdmin();
+  localStorage.clear();
+  DB.set('admins', [{ id: 1, username: admin.username, password: admin.password }]);
+  DB.set('users', []);
+  DB.set('tournaments', []);
+  DB.set('participants', []);
+  DB.set('transactions', []);
+  DB.set('installed', true);
+  DB.set('currentAdmin', admin);
+  showToast('✅ Factory reset complete!');
+  setTimeout(() => window.location.href = 'index.html', 1500);
+}
+
+init();
+</script>
+</body>
+</html>
