@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BattleZone – Home</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-brand">⚡ BattleZone</div>
+  <div class="navbar-wallet" id="walletBadge">₹0</div>
+</nav>
+
+<div class="container page-wrap">
+  <!-- Hero Banner -->
+  <div style="background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(6,214,160,0.15));border:1px solid rgba(124,58,237,0.3);border-radius:14px;padding:20px;margin:16px 0;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(168,85,247,0.2),transparent);border-radius:50%"></div>
+    <p style="font-size:0.75rem;color:var(--accent2);font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">🏆 Live Now</p>
+    <h1 style="font-size:1.6rem;margin-bottom:4px">Win Real Cash</h1>
+    <p style="font-size:0.82rem;color:var(--muted)">Join tournaments. Beat opponents. Get paid.</p>
+  </div>
+
+  <!-- Filter -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="filterTournaments('all',this)">All</button>
+    <button class="tab-btn" onclick="filterTournaments('upcoming',this)">Upcoming</button>
+    <button class="tab-btn" onclick="filterTournaments('live',this)">Live 🔴</button>
+  </div>
+
+  <div id="tournamentList"></div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+  <a href="index.html" class="active">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+    Home
+  </a>
+  <a href="my_tournaments.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    My Games
+  </a>
+  <a href="wallet.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    Wallet
+  </a>
+  <a href="profile.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profile
+  </a>
+</nav>
+
+<script src="js/app.js"></script>
+<script>
+if (!Auth.requireUser()) {}
+const user = Auth.currentUser();
+let allFilter = 'all';
+
+function init() {
+  // Refresh user data
+  const fresh = Users.findById(user.id);
+  if (fresh) { DB.set('currentUser', fresh); }
+  document.getElementById('walletBadge').textContent = fmt.inr(Users.findById(user.id)?.wallet_balance || 0);
+  renderList();
+}
+
+function filterTournaments(f, btn) {
+  allFilter = f;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+
+function renderList() {
+  const container = document.getElementById('tournamentList');
+  let tournaments = Tournaments.all().filter(t => t.status !== 'completed');
+  if (allFilter !== 'all') tournaments = tournaments.filter(t => t.status === allFilter);
+  tournaments.sort((a,b) => new Date(a.match_time) - new Date(b.match_time));
+
+  if (!tournaments.length) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">🎮</div><p>No tournaments available right now.<br>Check back soon!</p></div>`;
+    return;
+  }
+
+  container.innerHTML = tournaments.map(t => {
+    const joined = Participants.joined(user.id, t.id);
+    const count = Participants.forTournament(t.id).length;
+    return `
+    <div class="t-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div class="t-card-title">${t.title}</div>
+          <div class="t-card-game">🎮 ${t.game_name}</div>
+        </div>
+        <span class="badge badge-${t.status}">${t.status === 'live' ? '🔴 LIVE' : '🟡 UPCOMING'}</span>
+      </div>
+      <div class="t-card-row">
+        <div class="t-card-stat">
+          <div class="t-card-stat-val">${fmt.inr(t.entry_fee)}</div>
+          <div class="t-card-stat-lbl">Entry Fee</div>
+        </div>
+        <div class="t-card-stat">
+          <div class="t-card-stat-val">${fmt.inr(t.prize_pool)}</div>
+          <div class="t-card-stat-lbl">Prize Pool</div>
+        </div>
+        <div class="t-card-stat">
+          <div class="t-card-stat-val">${count}</div>
+          <div class="t-card-stat-lbl">Players</div>
+        </div>
+      </div>
+      <div class="t-card-time">⏰ ${fmt.date(t.match_time)}</div>
+      ${joined
+        ? `<button class="btn btn-outline" disabled style="border-color:var(--accent3);color:var(--accent3)">✅ Joined</button>`
+        : `<button class="btn btn-primary" onclick="joinTournament(${t.id})">⚔️ Join Now – ${fmt.inr(t.entry_fee)}</button>`
+      }
+    </div>`;
+  }).join('');
+}
+
+function joinTournament(tid) {
+  const t = Tournaments.find(tid);
+  const u = Users.findById(user.id);
+  if (!t || !u) return;
+  if (Participants.joined(u.id, tid)) { showToast('Already joined!', 'error'); return; }
+  if (u.wallet_balance < t.entry_fee) {
+    showToast(`Insufficient balance! Need ${fmt.inr(t.entry_fee)}`, 'error'); return;
+  }
+  // Deduct fee
+  Users.update(u.id, { wallet_balance: u.wallet_balance - t.entry_fee });
+  Transactions.add(u.id, t.entry_fee, 'debit', `Entry: ${t.title}`);
+  Participants.add(u.id, tid);
+  DB.set('currentUser', Users.findById(u.id));
+  showToast(`✅ Joined ${t.title}! Good luck!`);
+  init();
+}
+
+init();
+</script>
+</body>
+</html>
