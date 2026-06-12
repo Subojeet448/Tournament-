@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BattleZone – Wallet</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-brand">⚡ Wallet</div>
+  <div style="font-size:0.8rem;color:var(--muted)" id="userBadge"></div>
+</nav>
+
+<div class="container page-wrap" style="padding-top:16px">
+  <!-- Balance Card -->
+  <div style="background:linear-gradient(135deg,#1e1040,#0f2820);border:1px solid rgba(124,58,237,0.4);border-radius:16px;padding:24px;margin-bottom:16px;text-align:center;position:relative;overflow:hidden">
+    <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(124,58,237,0.2),transparent);border-radius:50%"></div>
+    <div style="position:absolute;bottom:-40px;left:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(6,214,160,0.15),transparent);border-radius:50%"></div>
+    <p style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Available Balance</p>
+    <div id="balanceDisplay" style="font-family:'Rajdhani',sans-serif;font-size:3rem;font-weight:700;background:linear-gradient(135deg,#a855f7,#06d6a0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">₹0</div>
+    <p style="font-size:0.75rem;color:var(--muted);margin-top:6px" id="usernameLbl"></p>
+  </div>
+
+  <!-- Action Buttons -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+    <button class="btn btn-success" onclick="showModal('add')">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Money
+    </button>
+    <button class="btn btn-outline" onclick="showModal('withdraw')">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>
+      Withdraw
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+    <div class="card" style="text-align:center;padding:12px">
+      <div id="statWon" style="font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;color:var(--accent3)">₹0</div>
+      <div style="font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-top:3px">Won</div>
+    </div>
+    <div class="card" style="text-align:center;padding:12px">
+      <div id="statSpent" style="font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;color:var(--red)">₹0</div>
+      <div style="font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-top:3px">Spent</div>
+    </div>
+    <div class="card" style="text-align:center;padding:12px">
+      <div id="statAdded" style="font-family:'Rajdhani',sans-serif;font-size:1.2rem;font-weight:700;color:var(--accent2)">₹0</div>
+      <div style="font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-top:3px">Added</div>
+    </div>
+  </div>
+
+  <!-- Transaction History -->
+  <div class="section-title">Transaction History</div>
+  <div class="card" id="txnList" style="padding:0 16px"></div>
+</div>
+
+<!-- Add/Withdraw Modal -->
+<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:flex-end;justify-content:center">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px 16px 0 0;padding:24px;width:100%;max-width:480px">
+    <h3 id="modalTitle" style="margin-bottom:16px">Add Money</h3>
+    <div class="form-group">
+      <label class="form-label">Amount (₹)</label>
+      <input class="form-input" type="number" id="modalAmt" placeholder="Enter amount" min="10" max="50000">
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px" id="quickAmts"></div>
+    <p style="font-size:0.78rem;color:var(--muted);margin-bottom:14px" id="modalNote"></p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="modalConfirmBtn" onclick="confirmModal()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="index.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+    Home
+  </a>
+  <a href="my_tournaments.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    My Games
+  </a>
+  <a href="wallet.html" class="active">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    Wallet
+  </a>
+  <a href="profile.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profile
+  </a>
+</nav>
+
+<script src="js/app.js"></script>
+<script>
+if (!Auth.requireUser()) {}
+let user = Users.findById(Auth.currentUser().id);
+let modalMode = 'add';
+
+function init() {
+  user = Users.findById(Auth.currentUser().id);
+  document.getElementById('balanceDisplay').textContent = fmt.inr(user.wallet_balance);
+  document.getElementById('usernameLbl').textContent = '@' + user.username;
+  document.getElementById('userBadge').textContent = '@' + user.username;
+
+  const txns = Transactions.forUser(user.id);
+  let won=0, spent=0, added=0;
+  txns.forEach(t => {
+    if (t.type === 'credit' && t.description.includes('Prize')) won += t.amount;
+    if (t.type === 'debit' && t.description.includes('Entry')) spent += t.amount;
+    if (t.type === 'credit' && t.description.includes('Add')) added += t.amount;
+  });
+  document.getElementById('statWon').textContent = fmt.inr(won);
+  document.getElementById('statSpent').textContent = fmt.inr(spent);
+  document.getElementById('statAdded').textContent = fmt.inr(added);
+
+  const el = document.getElementById('txnList');
+  if (!txns.length) { el.innerHTML = '<div class="empty" style="padding:30px"><p>No transactions yet</p></div>'; return; }
+  el.innerHTML = txns.map(t => `
+    <div class="txn">
+      <div>
+        <div class="txn-desc">${t.description}</div>
+        <div class="txn-date">${fmt.date(t.created_at)}</div>
+      </div>
+      <div class="txn-amt ${t.type === 'credit' ? 'txn-credit' : 'txn-debit'}">
+        ${t.type === 'credit' ? '+' : '-'}${fmt.inr(t.amount)}
+      </div>
+    </div>`).join('');
+}
+
+function showModal(mode) {
+  modalMode = mode;
+  document.getElementById('modalTitle').textContent = mode === 'add' ? '💳 Add Money' : '💸 Withdraw';
+  const quickAmts = mode === 'add' ? [100,500,1000,2000,5000,10000] : [100,500,1000];
+  document.getElementById('quickAmts').innerHTML = quickAmts.map(a =>
+    `<button onclick="document.getElementById('modalAmt').value=${a}" style="padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;font-size:0.82rem">₹${a}</button>`
+  ).join('');
+  document.getElementById('modalNote').textContent = mode === 'add'
+    ? '💡 Demo mode: Money will be added to your account instantly.'
+    : `💡 Demo mode: Withdraw to UPI/Bank. Current balance: ${fmt.inr(user.wallet_balance)}`;
+  document.getElementById('modalAmt').value = '';
+  document.getElementById('modal').style.display = 'flex';
+}
+function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+function confirmModal() {
+  const amt = parseFloat(document.getElementById('modalAmt').value);
+  if (!amt || amt < 10) { showToast('Minimum amount is ₹10', 'error'); return; }
+  if (modalMode === 'withdraw' && amt > user.wallet_balance) { showToast('Insufficient balance!', 'error'); return; }
+
+  if (modalMode === 'add') {
+    Users.update(user.id, { wallet_balance: user.wallet_balance + amt });
+    Transactions.add(user.id, amt, 'credit', `💳 Add Money (UPI)`);
+    showToast(`✅ ₹${amt} added to wallet!`);
+  } else {
+    Users.update(user.id, { wallet_balance: user.wallet_balance - amt });
+    Transactions.add(user.id, amt, 'debit', `🏦 Withdrawal (UPI)`);
+    showToast(`✅ ₹${amt} withdrawal initiated!`);
+  }
+  DB.set('currentUser', Users.findById(user.id));
+  closeModal(); init();
+}
+init();
+</script>
+</body>
+</html>
