@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BattleZone – My Tournaments</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-brand">⚡ My Tournaments</div>
+  <div class="navbar-wallet" id="walletBadge">₹0</div>
+</nav>
+
+<div class="container page-wrap">
+  <div class="tabs" style="margin-top:16px">
+    <button class="tab-btn active" onclick="switchTab('active',this)">Upcoming / Live</button>
+    <button class="tab-btn" onclick="switchTab('completed',this)">Completed</button>
+  </div>
+
+  <div class="tab-content active" id="tab-active">
+    <div id="activeList"></div>
+  </div>
+
+  <div class="tab-content" id="tab-completed">
+    <div id="completedList"></div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="index.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+    Home
+  </a>
+  <a href="my_tournaments.html" class="active">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    My Games
+  </a>
+  <a href="wallet.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    Wallet
+  </a>
+  <a href="profile.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profile
+  </a>
+</nav>
+
+<script src="js/app.js"></script>
+<script>
+if (!Auth.requireUser()) {}
+const user = Auth.currentUser();
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+function init() {
+  const fresh = Users.findById(user.id);
+  document.getElementById('walletBadge').textContent = fmt.inr(fresh?.wallet_balance || 0);
+
+  const myParts = Participants.forUser(user.id);
+  const active = [], completed = [];
+
+  myParts.forEach(p => {
+    const t = Tournaments.find(p.tournament_id);
+    if (!t) return;
+    if (t.status === 'completed') completed.push({ t, p });
+    else active.push({ t, p });
+  });
+
+  // Render Active
+  const activeEl = document.getElementById('activeList');
+  if (!active.length) {
+    activeEl.innerHTML = `<div class="empty"><div class="empty-icon">🎮</div><p>You haven't joined any upcoming tournaments.<br><a href="index.html" style="color:var(--accent2)">Browse tournaments →</a></p></div>`;
+  } else {
+    activeEl.innerHTML = active.map(({ t, p }) => `
+      <div class="t-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div>
+            <div class="t-card-title">${t.title}</div>
+            <div class="t-card-game">🎮 ${t.game_name}</div>
+          </div>
+          <span class="badge badge-${t.status}">${t.status === 'live' ? '🔴 LIVE' : '🟡 UPCOMING'}</span>
+        </div>
+        <div class="t-card-time">⏰ ${fmt.date(t.match_time)}</div>
+        <div style="display:flex;gap:12px;margin-bottom:10px">
+          <div class="t-card-stat"><div class="t-card-stat-val">${fmt.inr(t.entry_fee)}</div><div class="t-card-stat-lbl">Entry</div></div>
+          <div class="t-card-stat"><div class="t-card-stat-val">${fmt.inr(t.prize_pool)}</div><div class="t-card-stat-lbl">Prize</div></div>
+        </div>
+        ${t.status === 'live' && t.room_id ? `
+        <div class="room-info">
+          <div style="font-size:0.75rem;color:var(--accent3);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em">🔑 Room Details</div>
+          <div class="room-row"><span class="room-label">Room ID</span><span class="room-val">${t.room_id}</span></div>
+          <div class="room-row"><span class="room-label">Password</span><span class="room-val">${t.room_password}</span></div>
+        </div>` : t.status === 'live' ? `<div style="font-size:0.8rem;color:var(--yellow);padding:10px;background:rgba(245,158,11,0.08);border-radius:8px;text-align:center">⏳ Room details will appear here once set by admin</div>` : ''}
+      </div>`).join('');
+  }
+
+  // Render Completed
+  const completedEl = document.getElementById('completedList');
+  if (!completed.length) {
+    completedEl.innerHTML = `<div class="empty"><div class="empty-icon">📜</div><p>No completed tournaments yet.</p></div>`;
+  } else {
+    completedEl.innerHTML = completed.map(({ t, p }) => {
+      const isWinner = t.winner_id === user.id;
+      return `
+      <div class="t-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div>
+            <div class="t-card-title">${t.title}</div>
+            <div class="t-card-game">🎮 ${t.game_name}</div>
+          </div>
+          <span class="badge badge-completed">✅ Done</span>
+        </div>
+        <div class="t-card-time">⏰ ${fmt.date(t.match_time)}</div>
+        <div style="margin-top:8px;padding:10px;border-radius:8px;text-align:center;${isWinner ? 'background:rgba(6,214,160,0.12);border:1px solid rgba(6,214,160,0.3)' : 'background:rgba(255,255,255,0.04)'}">
+          ${isWinner
+            ? `<div style="font-size:1.1rem;font-weight:700;color:var(--accent3)">🏆 Winner!</div><div style="font-size:0.8rem;color:var(--muted)">Prize: ${fmt.inr(t.prize_pool)} credited</div>`
+            : `<div style="font-size:0.9rem;color:var(--muted)">🎮 Participated</div>`
+          }
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
