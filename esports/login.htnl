@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BattleZone – Login</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-logo">⚡ BattleZone</div>
+  <p class="auth-sub">India's #1 Mobile Esports Platform</p>
+
+  <div class="auth-card">
+    <div class="tabs" style="margin-bottom:20px">
+      <button class="tab-btn active" onclick="switchTab('login',this)">Login</button>
+      <button class="tab-btn" onclick="switchTab('signup',this)">Sign Up</button>
+    </div>
+
+    <!-- LOGIN TAB -->
+    <div class="tab-content active" id="tab-login">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-input" type="text" id="l-user" placeholder="Enter username" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="l-pass" placeholder="Enter password" autocomplete="current-password">
+      </div>
+      <div id="l-err" style="font-size:0.82rem;color:var(--red);margin-bottom:12px;min-height:18px"></div>
+      <button class="btn btn-primary" onclick="doLogin()">Login →</button>
+    </div>
+
+    <!-- SIGNUP TAB -->
+    <div class="tab-content" id="tab-signup">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-input" type="text" id="s-user" placeholder="Choose username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="s-email" placeholder="Enter email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="s-pass" placeholder="Min 6 characters">
+      </div>
+      <div id="s-err" style="font-size:0.82rem;color:var(--red);margin-bottom:12px;min-height:18px"></div>
+      <div id="s-ok" style="font-size:0.82rem;color:var(--accent3);margin-bottom:12px;min-height:18px"></div>
+      <button class="btn btn-primary" onclick="doSignup()">Create Account →</button>
+    </div>
+  </div>
+
+  <p style="margin-top:16px;font-size:0.75rem;color:var(--muted)">
+    New user gets <strong style="color:var(--accent3)">₹100</strong> welcome bonus!
+  </p>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+  // Redirect if already logged in
+  if (DB.get('installed') && DB.get('currentUser')) window.location.href = 'index.html';
+  if (!DB.get('installed')) window.location.href = 'install.html';
+
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+name).classList.add('active');
+  }
+
+  function doLogin() {
+    const u = document.getElementById('l-user').value.trim();
+    const p = document.getElementById('l-pass').value;
+    const err = document.getElementById('l-err');
+    err.textContent = '';
+    if (!u || !p) { err.textContent = 'Please fill all fields'; return; }
+    const user = Users.find(u);
+    if (!user || user.password !== p) { err.textContent = '❌ Invalid username or password'; return; }
+    if (user.blocked) { err.textContent = '🚫 Your account has been blocked. Contact admin.'; return; }
+    DB.set('currentUser', user);
+    window.location.href = 'index.html';
+  }
+
+  function doSignup() {
+    const u = document.getElementById('s-user').value.trim();
+    const e = document.getElementById('s-email').value.trim();
+    const p = document.getElementById('s-pass').value;
+    const err = document.getElementById('s-err');
+    const ok = document.getElementById('s-ok');
+    err.textContent = ''; ok.textContent = '';
+    if (!u || !e || !p) { err.textContent = 'Please fill all fields'; return; }
+    if (p.length < 6) { err.textContent = 'Password must be at least 6 characters'; return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { err.textContent = 'Invalid email address'; return; }
+    const res = Users.create(u, e, p);
+    if (res.error) { err.textContent = '❌ ' + res.error; return; }
+    Transactions.add(res.user.id, 100, 'credit', '🎁 Welcome Bonus');
+    ok.textContent = '✅ Account created! You got ₹100 bonus. Please login.';
+    document.getElementById('s-user').value = '';
+    document.getElementById('s-email').value = '';
+    document.getElementById('s-pass').value = '';
+  }
+
+  // Enter key
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') { if (document.getElementById('tab-login').classList.contains('active')) doLogin(); else doSignup(); }});
+</script>
+</body>
+</html>
