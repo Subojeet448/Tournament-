@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BattleZone – Admin Dashboard</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <span class="admin-sidebar-brand">⚡ BattleZone</span>
+    <a href="index.html" class="admin-nav-link active">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a href="tournament.html" class="admin-nav-link">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
+      Tournaments
+    </a>
+    <a href="users.html" class="admin-nav-link">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Users
+    </a>
+    <a href="settings.html" class="admin-nav-link">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Settings
+    </a>
+    <div style="position:absolute;bottom:20px;left:0;right:0;padding:0 20px">
+      <a href="../index.html" style="display:block;font-size:0.8rem;color:var(--muted);text-decoration:none;margin-bottom:10px">← User App</a>
+      <button onclick="Auth.adminLogout()" style="width:100%;padding:8px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;color:var(--red);cursor:pointer;font-size:0.82rem">Logout</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <div>
+        <h2 style="margin-bottom:4px">Dashboard</h2>
+        <p style="font-size:0.82rem;color:var(--muted)" id="adminName"></p>
+      </div>
+      <a href="tournament.html" class="btn btn-primary btn-sm" style="width:auto">+ New Tournament</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="statUsers">0</div>
+        <div class="stat-lbl">Total Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="statTournaments">0</div>
+        <div class="stat-lbl">Tournaments</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="statPrize" style="font-size:1.3rem">₹0</div>
+        <div class="stat-lbl">Prize Distributed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="statRevenue" style="font-size:1.3rem;color:var(--accent3)">₹0</div>
+        <div class="stat-lbl">Commission</div>
+      </div>
+    </div>
+
+    <!-- Recent Tournaments -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="section-title" style="margin:0">Recent Tournaments</div>
+      <a href="tournament.html" style="font-size:0.8rem;color:var(--accent2);text-decoration:none">View All →</a>
+    </div>
+
+    <div class="card" style="overflow-x:auto;padding:0">
+      <table class="tbl">
+        <thead><tr>
+          <th>Tournament</th><th>Game</th><th>Status</th><th>Players</th><th>Prize</th><th>Action</th>
+        </tr></thead>
+        <tbody id="recentTable"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Mobile Nav -->
+<nav class="admin-mobile-nav">
+  <a href="index.html" class="active">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Home
+  </a>
+  <a href="tournament.html">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
+    Events
+  </a>
+  <a href="users.html">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Users
+  </a>
+  <a href="settings.html">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Settings
+  </a>
+</nav>
+
+<script src="../js/app.js"></script>
+<script>
+if (!Auth.requireAdmin()) {}
+const admin = Auth.currentAdmin();
+document.getElementById('adminName').textContent = 'Welcome, ' + admin.username;
+
+function init() {
+  const users = Users.all();
+  const tournaments = Tournaments.all();
+  const txns = Transactions.all();
+
+  document.getElementById('statUsers').textContent = users.length;
+  document.getElementById('statTournaments').textContent = tournaments.length;
+
+  let totalPrize = 0, totalRevenue = 0;
+  tournaments.filter(t => t.status === 'completed').forEach(t => {
+    totalPrize += t.prize_pool;
+    const comm = (t.commission_pct || 20) / 100;
+    const fee = t.entry_fee * Participants.forTournament(t.id).length;
+    totalRevenue += fee * comm;
+  });
+
+  document.getElementById('statPrize').textContent = fmt.inr(totalPrize);
+  document.getElementById('statRevenue').textContent = fmt.inr(Math.round(totalRevenue));
+
+  const tbody = document.getElementById('recentTable');
+  const recent = [...tournaments].sort((a,b) => b.id - a.id).slice(0,8);
+  if (!recent.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">No tournaments yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = recent.map(t => `
+    <tr>
+      <td style="font-weight:600">${t.title}</td>
+      <td style="color:var(--muted)">${t.game_name}</td>
+      <td><span class="badge badge-${t.status}">${t.status}</span></td>
+      <td>${Participants.forTournament(t.id).length}</td>
+      <td style="color:var(--accent3)">${fmt.inr(t.prize_pool)}</td>
+      <td><a href="manage_tournament.html?id=${t.id}" class="btn btn-outline btn-sm">Manage</a></td>
+    </tr>`).join('');
+}
+
+init();
+</script>
+</body>
+</html>
