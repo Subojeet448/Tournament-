@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BattleZone – Tournaments</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <span class="admin-sidebar-brand">⚡ BattleZone</span>
+    <a href="index.html" class="admin-nav-link">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <a href="tournament.html" class="admin-nav-link active">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>Tournaments</a>
+    <a href="users.html" class="admin-nav-link">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Users</a>
+    <a href="settings.html" class="admin-nav-link">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</a>
+    <div style="position:absolute;bottom:20px;left:0;right:0;padding:0 20px">
+      <button onclick="Auth.adminLogout()" style="width:100%;padding:8px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;color:var(--red);cursor:pointer;font-size:0.82rem">Logout</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <h2 style="margin-bottom:20px">🏆 Tournaments</h2>
+
+    <!-- Create Form -->
+    <div class="card card-highlight" style="margin-bottom:24px">
+      <h3 style="margin-bottom:16px" id="formTitle">➕ Create Tournament</h3>
+      <input type="hidden" id="editId">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label class="form-label">Title</label>
+          <input class="form-input" type="text" id="f-title" placeholder="Tournament name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Game Name</label>
+          <input class="form-input" type="text" id="f-game" placeholder="BGMI, Free Fire, etc.">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Entry Fee (₹)</label>
+          <input class="form-input" type="number" id="f-fee" placeholder="e.g. 50" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prize Pool (₹)</label>
+          <input class="form-input" type="number" id="f-prize" placeholder="e.g. 5000" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Match Date & Time</label>
+          <input class="form-input" type="datetime-local" id="f-time">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Commission %</label>
+          <input class="form-input" type="number" id="f-comm" placeholder="e.g. 20" min="0" max="100" value="20">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button class="btn btn-primary" onclick="saveTournament()" style="flex:1" id="saveBtn">Create Tournament</button>
+        <button class="btn btn-outline" onclick="resetForm()" style="width:auto;padding:12px 20px" id="cancelBtn" style="display:none">Cancel</button>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="section-title" style="margin:0">All Tournaments</div>
+      <input type="text" id="searchBox" class="form-input" style="width:200px;padding:8px 12px;font-size:0.82rem" placeholder="🔍 Search...">
+    </div>
+    <div class="card" style="overflow-x:auto;padding:0">
+      <table class="tbl">
+        <thead><tr><th>Title</th><th>Game</th><th>Fee</th><th>Prize</th><th>Status</th><th>Players</th><th>Actions</th></tr></thead>
+        <tbody id="tTable"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<nav class="admin-mobile-nav">
+  <a href="index.html"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Home</a>
+  <a href="tournament.html" class="active"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>Events</a>
+  <a href="users.html"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Users</a>
+  <a href="settings.html"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</a>
+</nav>
+
+<script src="../js/app.js"></script>
+<script>
+if (!Auth.requireAdmin()) {}
+let searchVal = '';
+
+document.getElementById('searchBox').addEventListener('input', e => { searchVal = e.target.value.toLowerCase(); renderTable(); });
+
+function renderTable() {
+  const all = Tournaments.all().filter(t => !searchVal || t.title.toLowerCase().includes(searchVal) || t.game_name.toLowerCase().includes(searchVal));
+  const sorted = [...all].sort((a,b) => b.id - a.id);
+  const tbody = document.getElementById('tTable');
+  if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No tournaments found</td></tr>'; return; }
+  tbody.innerHTML = sorted.map(t => `
+    <tr>
+      <td style="font-weight:600;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.title}</td>
+      <td style="color:var(--muted)">${t.game_name}</td>
+      <td>${fmt.inr(t.entry_fee)}</td>
+      <td style="color:var(--accent3)">${fmt.inr(t.prize_pool)}</td>
+      <td><span class="badge badge-${t.status}">${t.status}</span></td>
+      <td>${Participants.forTournament(t.id).length}</td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        <a href="manage_tournament.html?id=${t.id}" class="btn btn-success btn-sm">Manage</a>
+        <button class="btn btn-outline btn-sm" onclick="editTournament(${t.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTournament(${t.id})">Del</button>
+      </td>
+    </tr>`).join('');
+}
+
+function saveTournament() {
+  const title = document.getElementById('f-title').value.trim();
+  const game = document.getElementById('f-game').value.trim();
+  const fee = parseFloat(document.getElementById('f-fee').value);
+  const prize = parseFloat(document.getElementById('f-prize').value);
+  const time = document.getElementById('f-time').value;
+  const comm = parseFloat(document.getElementById('f-comm').value) || 20;
+  const editId = document.getElementById('editId').value;
+
+  if (!title || !game || isNaN(fee) || isNaN(prize) || !time) { showToast('Please fill all fields', 'error'); return; }
+
+  if (editId) {
+    Tournaments.update(parseInt(editId), { title, game_name: game, entry_fee: fee, prize_pool: prize, match_time: new Date(time).toISOString(), commission_pct: comm });
+    showToast('✅ Tournament updated!');
+    resetForm();
+  } else {
+    Tournaments.create({ title, game_name: game, entry_fee: fee, prize_pool: prize, match_time: new Date(time).toISOString(), commission_pct: comm });
+    showToast('✅ Tournament created!');
+    resetForm();
+  }
+  renderTable();
+}
+
+function editTournament(id) {
+  const t = Tournaments.find(id);
+  if (!t) return;
+  document.getElementById('editId').value = t.id;
+  document.getElementById('f-title').value = t.title;
+  document.getElementById('f-game').value = t.game_name;
+  document.getElementById('f-fee').value = t.entry_fee;
+  document.getElementById('f-prize').value = t.prize_pool;
+  document.getElementById('f-time').value = new Date(t.match_time).toISOString().slice(0,16);
+  document.getElementById('f-comm').value = t.commission_pct || 20;
+  document.getElementById('formTitle').textContent = '✏️ Edit Tournament';
+  document.getElementById('saveBtn').textContent = 'Update Tournament';
+  document.getElementById('cancelBtn').style.display = 'inline-flex';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetForm() {
+  document.getElementById('editId').value = '';
+  document.getElementById('f-title').value = '';
+  document.getElementById('f-game').value = '';
+  document.getElementById('f-fee').value = '';
+  document.getElementById('f-prize').value = '';
+  document.getElementById('f-time').value = '';
+  document.getElementById('f-comm').value = '20';
+  document.getElementById('formTitle').textContent = '➕ Create Tournament';
+  document.getElementById('saveBtn').textContent = 'Create Tournament';
+  document.getElementById('cancelBtn').style.display = 'none';
+}
+
+function deleteTournament(id) {
+  const t = Tournaments.find(id);
+  if (!t) return;
+  if (!confirm(`Delete "${t.title}"? This cannot be undone.`)) return;
+  Tournaments.delete(id);
+  showToast('Tournament deleted');
+  renderTable();
+}
+
+renderTable();
+</script>
+</body>
+</html>
