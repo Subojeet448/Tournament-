@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BattleZone – Profile</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-brand">⚡ Profile</div>
+</nav>
+
+<div class="container page-wrap" style="padding-top:16px">
+  <!-- Avatar & Name -->
+  <div style="text-align:center;margin-bottom:20px">
+    <div id="avatar" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-size:2rem;font-weight:700;color:white;margin:0 auto 12px"></div>
+    <h2 id="displayName"></h2>
+    <p id="displayEmail" style="font-size:0.82rem;color:var(--muted);margin-top:2px"></p>
+  </div>
+
+  <!-- Stats Row -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+    <div class="card" style="text-align:center;padding:12px">
+      <div id="statPlayed" style="font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;color:var(--accent2)">0</div>
+      <div style="font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em">Played</div>
+    </div>
+    <div class="card" style="text-align:center;padding:12px">
+      <div id="statWins" style="font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;color:var(--accent3)">0</div>
+      <div style="font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em">Wins</div>
+    </div>
+    <div class="card" style="text-align:center;padding:12px">
+      <div id="statBal" style="font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;color:var(--yellow)">₹0</div>
+      <div style="font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em">Balance</div>
+    </div>
+  </div>
+
+  <!-- Edit Profile -->
+  <div class="section-title">Edit Profile</div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <input class="form-input" type="text" id="editUser" placeholder="Username">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="editEmail" placeholder="Email">
+    </div>
+    <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+  </div>
+
+  <!-- Change Password -->
+  <div class="section-title">Change Password</div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="form-group">
+      <label class="form-label">Current Password</label>
+      <input class="form-input" type="password" id="curPass" placeholder="Current password">
+    </div>
+    <div class="form-group">
+      <label class="form-label">New Password</label>
+      <input class="form-input" type="password" id="newPass" placeholder="New password (min 6)">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Confirm New Password</label>
+      <input class="form-input" type="password" id="confirmPass" placeholder="Confirm new password">
+    </div>
+    <button class="btn btn-outline" onclick="changePass()">Update Password</button>
+  </div>
+
+  <!-- Logout -->
+  <button class="btn btn-danger" onclick="confirmLogout()" style="margin-bottom:20px">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Logout
+  </button>
+
+  <p style="text-align:center;font-size:0.72rem;color:var(--muted);padding-bottom:10px">BattleZone v1.0 · Made in India 🇮🇳</p>
+</div>
+
+<nav class="bottom-nav">
+  <a href="index.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+    Home
+  </a>
+  <a href="my_tournaments.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    My Games
+  </a>
+  <a href="wallet.html">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    Wallet
+  </a>
+  <a href="profile.html" class="active">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profile
+  </a>
+</nav>
+
+<script src="js/app.js"></script>
+<script>
+if (!Auth.requireUser()) {}
+let user = Users.findById(Auth.currentUser().id);
+
+function init() {
+  user = Users.findById(Auth.currentUser().id);
+  document.getElementById('avatar').textContent = user.username[0].toUpperCase();
+  document.getElementById('displayName').textContent = user.username;
+  document.getElementById('displayEmail').textContent = user.email;
+  document.getElementById('editUser').value = user.username;
+  document.getElementById('editEmail').value = user.email;
+  document.getElementById('statBal').textContent = fmt.inr(user.wallet_balance);
+
+  const myParts = Participants.forUser(user.id);
+  const played = myParts.filter(p => { const t = Tournaments.find(p.tournament_id); return t?.status === 'completed'; }).length;
+  const wins = Tournaments.all().filter(t => t.winner_id === user.id).length;
+  document.getElementById('statPlayed').textContent = played;
+  document.getElementById('statWins').textContent = wins;
+}
+
+function saveProfile() {
+  const u = document.getElementById('editUser').value.trim();
+  const e = document.getElementById('editEmail').value.trim();
+  if (!u || !e) { showToast('Fields cannot be empty', 'error'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { showToast('Invalid email', 'error'); return; }
+  const existing = Users.find(u);
+  if (existing && existing.id !== user.id) { showToast('Username already taken!', 'error'); return; }
+  Users.update(user.id, { username: u, email: e });
+  DB.set('currentUser', Users.findById(user.id));
+  showToast('✅ Profile updated!');
+  init();
+}
+
+function changePass() {
+  const cur = document.getElementById('curPass').value;
+  const np = document.getElementById('newPass').value;
+  const cp = document.getElementById('confirmPass').value;
+  if (!cur || !np || !cp) { showToast('Fill all password fields', 'error'); return; }
+  if (user.password !== cur) { showToast('Current password is wrong!', 'error'); return; }
+  if (np.length < 6) { showToast('New password must be 6+ chars', 'error'); return; }
+  if (np !== cp) { showToast('Passwords do not match!', 'error'); return; }
+  Users.update(user.id, { password: np });
+  DB.set('currentUser', Users.findById(user.id));
+  document.getElementById('curPass').value = '';
+  document.getElementById('newPass').value = '';
+  document.getElementById('confirmPass').value = '';
+  showToast('✅ Password changed!');
+}
+
+function confirmLogout() {
+  if (confirm('Are you sure you want to logout?')) Auth.logout();
+}
+
+init();
+</script>
+</body>
+</html>
